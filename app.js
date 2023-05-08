@@ -1,20 +1,21 @@
-import { snsToHushRetreat, sesToUser } from "./utils/awsUtils.mjs";
-import { connectClient, updateOneFromCollection } from "./utils/mongoUtils.mjs";
+import { snsToHushRetreat, sesToUser } from "./utils/awsUtils.js";
+import { connectClient, updateOneFromCollection } from "./utils/mongoUtils.js";
 
 export const handler = async (event) => {
   const { awsService } = event;
 
-  if (awsService == "sns") {
-    const { message, emailType } = event;
-    const snsResult = snsToHushRetreat(message, emailType);
+  // if (awsService == "sns") {
+  //   const { message, emailType } = event;
+  //   const snsResult = snsToHushRetreat(message, emailType);
 
-    console.log({ snsResult });
-  }
+  //   console.log({ snsResult });
+  // }
 
   if (awsService == "ses") {
     const { htmlBody, email, subject, idToUpdate, status, collection } = event;
-    const sesResult = sesToUser(email, htmlBody, subject);
+    const sesResult = await sesToUser(email, htmlBody, subject);
 
+    console.log({ sesResult });
     if (sesResult.ok) {
       const client = await connectClient();
       const filter = { _id: idToUpdate };
@@ -37,8 +38,21 @@ export const handler = async (event) => {
 
   const response = {
     statusCode: 200,
-    body: JSON.stringify(result),
+    body: JSON.stringify("ran code"),
   };
 
   return response;
 };
+
+const event = {
+  htmlBody: "<h1>This is a test email</h1>",
+  email: "jieqiangt@gmail.com",
+  subject: "test email",
+  idToUpdate: "",
+  status: "ConfirmationSent",
+  collection: "feedback",
+  awsService: "ses",
+};
+
+const response = await handler(event);
+console.log({ response });

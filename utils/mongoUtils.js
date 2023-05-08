@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { AppError } from "./errorUtils";
+import { AppError } from "./errorUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
 export async function connectClient() {

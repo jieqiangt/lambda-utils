@@ -1,12 +1,31 @@
-export class AppError extends Error {
-  constructor({ title, clientMessage, status, className, message }) {
+export class ApiError extends Error {
+  constructor({ title, status, message }) {
     super();
     this.title = title;
-    this.clientMessage = clientMessage;
     this.status = status;
-    this.className = className;
     this.message = message;
   }
+}
+
+export function errorHandler(err, res) {
+  // for errors thrown by us
+  console.log(err);
+
+  if (err.clientMessage && err.status) {
+    res.status(err.status).json(err);
+    return;
+  }
+
+  const {
+    title = "Backend Error",
+    status = 500,
+    clientMessage = "Backend Error! Investigate logs in message!",
+    className = "error",
+    message = err,
+  } = err;
+
+  res.status(status).json({ title, clientMessage, status, className, message });
+  return;
 }
 
 export function catchApiWrapper(handler, allowedMethods = []) {
@@ -29,25 +48,4 @@ export function catchApiWrapper(handler, allowedMethods = []) {
       errorHandler(err, res);
     }
   };
-}
-
-export function errorHandler(err, res) {
-  // for errors thrown by us
-  console.log(err.Error);
-
-  if (err.clientMessage && err.status) {
-    res.status(err.status).json(err);
-    return;
-  }
-
-  const {
-    title = "Backend Error",
-    status = 500,
-    clientMessage = "Backend Error! Investigate logs in message!",
-    className = "error",
-    message = err,
-  } = err;
-
-  res.status(status).json({ title, clientMessage, status, className, message });
-  return;
 }

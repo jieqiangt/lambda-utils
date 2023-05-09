@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { AppError } from "./errorUtils.js";
+import { ApiError } from "./errorUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
 export async function connectClient() {
@@ -10,12 +10,9 @@ export async function connectClient() {
     console.log("MongoDB Client Connected!");
     return client;
   } catch (err) {
-    throw new AppError({
+    throw new ApiError({
       title: "Database Client Error",
-      clientMessage:
-        "Database connection is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
       status: 503,
-      className: "notification--error",
       message: err,
     });
   }
@@ -27,12 +24,9 @@ export async function connectDb(client, dbName) {
     console.log(`MongoDB Database ${dbName} connected!`);
     return db;
   } catch (err) {
-    throw new AppError({
+    throw new ApiError({
       title: "Database Connection Error",
-      clientMessage:
-        "Database connection is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
       status: 503,
-      className: "notification--error",
       message: err,
     });
   }
@@ -58,12 +52,9 @@ export async function insertOneToCollection(
         },
       };
     }
-    throw new AppError({
+    throw new ApiError({
       title: "Database Insertion Error",
-      clientMessage:
-        "Database is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
       status: 503,
-      className: "notification--error",
       message: err,
     });
   }
@@ -80,23 +71,18 @@ export async function getOneFromCollection(
   try {
     const result = await db.collection(collectionName).findOne(payload);
     if (!result && returnRequired) {
-      throw new AppError({
+      throw new ApiError({
         title: "Database Query Error",
-        clientMessage:
-          "Database is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
         status: 503,
-        className: "notification--error",
+        message: "No result returned from MongoDB..",
       });
     }
     console.log("MongoDB Database Query Completed");
     return result;
   } catch (err) {
-    throw new AppError({
+    throw new ApiError({
       title: "Database Query Error",
-      clientMessage:
-        "Database is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
       status: 503,
-      className: "notification--error",
       message: err,
     });
   }
@@ -119,12 +105,9 @@ export async function updateOneFromCollection(
     console.log("MongoDB Database Update Completed");
     return result;
   } catch (err) {
-    throw new AppError({
+    throw new ApiError({
       title: "Database Update Error",
-      clientMessage:
-        "Database is currently unavailable. Please try registering again later. Apologies on the inconvenience caused.",
       status: 503,
-      className: "notification--error",
       message: err,
     });
   }

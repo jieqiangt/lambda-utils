@@ -1,58 +1,34 @@
-import { snsToHushRetreat, sesToUser } from "./utils/awsUtils.js";
+import { sesToUser } from "./utils/awsUtils.js";
+import { ApiError } from "./utils/errorUtils.js";
 import { connectClient, updateOneFromCollection } from "./utils/mongoUtils.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const handler = async (event) => {
-  const { awsService } = event;
+  const { htmlBody, email, subject, idToUpdate, status, collection } = event;
 
-  // if (awsService == "sns") {
-  //   const { message, emailType } = event;
-  //   const snsResult = snsToHushRetreat(message, emailType);
+  await sesToUser(email, htmlBody, subject);
 
-  //   console.log({ snsResult });
-  // }
+  const client = await connectClient();
+  const filter = { _id: idToUpdate };
+  const update = { status: status };
 
-  if (awsService == "ses") {
-    const { htmlBody, email, subject, idToUpdate, status, collection } = event;
-    const sesResult = await sesToUser(email, htmlBody, subject);
+  const updateResult = await updateOneFromCollection(
+    client,
+    process.env.MONGO_DBNAME,
+    collection,
+    filter,
+    update
+  );
 
-    console.log({ sesResult });
-    if (sesResult.ok) {
-      const client = await connectClient();
-      const filter = { _id: idToUpdate };
-      const update = { status: status };
-
-      const updateResult = await updateOneFromCollection(
-        client,
-        process.env.MONGO_DBNAME,
-        collection,
-        filter,
-        update
-      );
-      console.log({ updateResult });
-
-      if (!(updateResult.modifiedCount === "1")) {
-        //send to logs that modification failed. Not related to user.
-      }
-    }
+  if (!updateResult.acknowledged | !(updateResult.modifiedCount === "1")) {
+    throw new ApiError({
+      title: "Mongo Update Error",
+      status: 503,
+      message:
+        "Email sent via AWS SES but MongoDB update failed with no acknowledgement & modified count is 0",
+    });
   }
 
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify("ran code"),
-  };
-
-  return response;
+  return { statusCode: 200, body: "Email sent via AWS SES & MongoDB Updated!" };
 };
-
-const event = {
-  htmlBody: "<h1>This is a test email</h1>",
-  email: "jieqiangt@gmail.com",
-  subject: "test email",
-  idToUpdate: "",
-  status: "ConfirmationSent",
-  collection: "feedback",
-  awsService: "ses",
-};
-
-const response = await handler(event);
-console.log({ response });

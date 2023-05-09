@@ -2,7 +2,9 @@
   "main": "app.js",
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-sns": "^3.328.0",
-    "mongodb": "^5.4.0"
+    "@aws-sdk/client-ses": "^3.329.0",
+    "dotenv": "^16.0.3",
+    "mongodb": "^5.4.0",
+    "uuid": "^9.0.0"
   }
 }
